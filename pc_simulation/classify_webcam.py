@@ -1,15 +1,23 @@
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
+import sys
 import time
 import threading
 import tkinter as tk
 from tkinter import font as tkfont
 
 import cv2
-import numpy as np
 from PIL import Image, ImageTk
 from transformers import pipeline
+
+# Windows: fix blurry UI on high-DPI screens
+if sys.platform == "win32":
+    try:
+        import ctypes
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+    except Exception:
+        pass
 
 # ── Settings ─────────────────────────────────────────────
 CLASSIFY_EVERY = 2.0
@@ -61,7 +69,6 @@ class WasteClassifierApp:
         panel.grid_propagate(False)
 
         title_f = tkfont.Font(family="Arial", size=11, weight="bold")
-        label_f = tkfont.Font(family="Arial", size=10)
         small_f = tkfont.Font(family="Arial", size=9)
 
         tk.Label(panel, text="Waste Classifier", font=title_f,
@@ -124,7 +131,8 @@ class WasteClassifierApp:
                  font=small_f, fg="#444466", bg="#16213e").pack(side="bottom", pady=10)
 
         # ── camera + classify threads ──────────────────────
-        self.cap         = cv2.VideoCapture(cam_index)
+        backend      = cv2.CAP_DSHOW if sys.platform == "win32" else cv2.CAP_ANY
+        self.cap     = cv2.VideoCapture(cam_index, backend)
         self.last_frame  = None
         self.lock        = threading.Lock()
         self.last_time   = 0.0
@@ -195,8 +203,10 @@ class WasteClassifierApp:
 
 
 def find_camera():
+    # Use DirectShow on Windows for faster camera probing
+    backend = cv2.CAP_DSHOW if sys.platform == "win32" else cv2.CAP_ANY
     for index in range(5):
-        cap = cv2.VideoCapture(index)
+        cap = cv2.VideoCapture(index, backend)
         if cap.isOpened():
             ret, _ = cap.read()
             cap.release()
