@@ -12,7 +12,6 @@ from PIL import Image, ImageTk
 from transformers import pipeline
 
 # ── Settings ─────────────────────────────────────────────
-CAM_INDEX      = 0
 CLASSIFY_EVERY = 2.0
 MODEL_NAME     = "yangy50/garbage-classification"
 WINDOW_W       = 900
@@ -40,7 +39,7 @@ ALL_CLASSES = ["cardboard", "glass", "metal", "paper", "plastic", "trash"]
 
 
 class WasteClassifierApp:
-    def __init__(self, root, model):
+    def __init__(self, root, model, cam_index):
         self.root    = root
         self.model   = model
         self.results = []
@@ -125,7 +124,7 @@ class WasteClassifierApp:
                  font=small_f, fg="#444466", bg="#16213e").pack(side="bottom", pady=10)
 
         # ── camera + classify threads ──────────────────────
-        self.cap         = cv2.VideoCapture(CAM_INDEX)
+        self.cap         = cv2.VideoCapture(cam_index)
         self.last_frame  = None
         self.lock        = threading.Lock()
         self.last_time   = 0.0
@@ -195,6 +194,18 @@ class WasteClassifierApp:
         self.root.destroy()
 
 
+def find_camera():
+    for index in range(5):
+        cap = cv2.VideoCapture(index)
+        if cap.isOpened():
+            ret, _ = cap.read()
+            cap.release()
+            if ret:
+                print(f"Camera found at index {index}")
+                return index
+    return None
+
+
 def load_model():
     print("Loading model (cached after first run)...")
     m = pipeline("image-classification", model=MODEL_NAME)
@@ -203,9 +214,14 @@ def load_model():
 
 
 def main():
+    cam_index = find_camera()
+    if cam_index is None:
+        print("No camera found. Please connect a webcam and try again.")
+        return
+
     model = load_model()
     root  = tk.Tk()
-    app   = WasteClassifierApp(root, model)
+    app   = WasteClassifierApp(root, model, cam_index)
     print("Window open. Hold a waste item in front of the camera.")
     print("Press Q or close the window to quit.\n")
     root.mainloop()
