@@ -20,8 +20,9 @@ if sys.platform == "win32":
         pass
 
 # ── Settings ─────────────────────────────────────────────
-CLASSIFY_EVERY = 2.0
-MODEL_NAME     = "yangy50/garbage-classification"
+CLASSIFY_EVERY       = 2.0
+CONFIDENCE_THRESHOLD = 0.70   # below this → show "Not sure"
+MODEL_NAME           = "yangy50/garbage-classification"
 WINDOW_W       = 900
 CAM_W, CAM_H   = 640, 480
 PANEL_W        = WINDOW_W - CAM_W
@@ -182,8 +183,12 @@ class WasteClassifierApp:
         results = sorted(results, key=lambda r: r["score"], reverse=True)
         top     = results[0]
 
-        name  = CLASS_NAMES.get(top["label"], top["label"])
-        color = CLASS_COLORS.get(top["label"], "#ffffff")
+        if top["score"] >= CONFIDENCE_THRESHOLD:
+            name  = CLASS_NAMES.get(top["label"], top["label"])
+            color = CLASS_COLORS.get(top["label"], "#ffffff")
+        else:
+            name  = "Not sure"
+            color = "#888888"
         self.lbl_result.config(text=name, fg=color)
         self.lbl_conf.config(text=f"{top['score']*100:.1f}% confidence")
         self.lbl_status.config(
