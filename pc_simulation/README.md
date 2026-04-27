@@ -24,7 +24,8 @@ Supports two camera sources:
 - Python 3.8 or newer — https://www.python.org/downloads/
 - A working webcam (for PC simulation mode)
 - ESP32-CAM running CameraWebServer sketch (for ESP32 mode)
-- Internet connection (first run only, to download the model ~350 MB)
+- Internet connection — **first run only** to download the model (~350 MB).
+  After that the app works fully offline.
 
 ---
 
@@ -122,7 +123,11 @@ sudo usermod -aG video $USER
 
 **Model download is slow**
 The model (~350 MB) downloads only on the first run and is cached locally.
-Subsequent runs load instantly.
+Subsequent runs load instantly — no internet connection required.
+
+**"No file found" error when running offline without prior download**
+The model must be downloaded at least once while online. Run the app once
+with internet access before taking it to a venue without WiFi.
 
 **Window does not appear on Linux (Wayland)**
 ```bash

@@ -225,8 +225,8 @@ def find_camera():
 
 def load_model():
     print("Loading CLIP model (cached after first run)...")
-    model     = CLIPModel.from_pretrained(MODEL_NAME)
-    processor = CLIPProcessor.from_pretrained(MODEL_NAME)
+    model     = CLIPModel.from_pretrained(MODEL_NAME, local_files_only=True)
+    processor = CLIPProcessor.from_pretrained(MODEL_NAME, local_files_only=True)
     model.eval()
     print("Model ready.\n")
     return model, processor
